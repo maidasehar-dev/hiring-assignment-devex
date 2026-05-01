@@ -1,0 +1,13 @@
+{
+  "name": "deployment-registry",
+  "version": "1.0.0",
+  "description": "A REST API for storing and retrieving deployment records. Built with C# / .NET 10 and MongoDB.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs"
+}

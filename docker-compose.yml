@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
+  deployment-registry:
+    build:
+      context: ./deployment-registry/src/DeploymentRegistry.Api
+      dockerfile: Dockerfile
+    ports:
+      - "5176:5176"
+    depends_on:
+      - mongodb
+    environment:
+      - MongoDb__ConnectionString=mongodb://mongodb:27017
+      - MongoDb__DatabaseName=deployment-registry
+
+  deployment-insights:
+    build:
+      context: ./deployment-insights
+      dockerfile: Dockerfile
+    ports:
+      - "4000:4000"
+    depends_on:
+      - deployment-registry
+    environment:
+      - REGISTRY_URL=http://deployment-registry:5176/api/deployments
+
+volumes:
+  mongo-data:
