@@ -27,6 +27,16 @@ jobs:
         working-directory: ./deployment-insights
         run: npm test
 
-      - name: Build Docker image
-        working-directory: ./deployment-insights
-        run: docker build -t deployment-insights .
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.CR_PAT }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v4
+        with:
+          context: ./deployment-insights
+          push: true
+          tags: ghcr.io/${{ github.repository_owner }}/deployment-insights:latest
