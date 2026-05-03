@@ -95,4 +95,38 @@ app.get('/insights/frequency', async (req: Request, res: Response) => {
   }
 });
 
+// Average lead time from deploy start to success per service
+app.get('/insights/lead-time', async (req: Request, res: Response) => {
+  try {
+    const response = await axios.get(REGISTRY_URL);
+    const deployments = response.data;
+
+    const serviceStats: Record<string, { totalTime: number; count: number }> = {};
+
+    for (const deployment of deployments) {
+      if (deployment.status === 'Succeeded' && deployment.startedAt && deployment.finishedAt) {
+        const service = deployment.serviceName;
+        const startTime = new Date(deployment.startedAt).getTime();
+        const endTime = new Date(deployment.finishedAt).getTime();
+        const duration = (endTime - startTime) / 1000 / 60;
+
+        if (!serviceStats[service]) {
+          serviceStats[service] = { totalTime: 0, count: 0 };
+        }
+        serviceStats[service].totalTime += duration;
+        serviceStats[service].count++;
+      }
+    }
+
+    const result = Object.entries(serviceStats).map(([service, stats]) => ({
+      service,
+      averageLeadTimeMinutes: (stats.totalTime / stats.count).toFixed(2),
+      totalDeployments: stats.count
+    }));
+
+    res.json(result);
+  } catch {
+    res.status(500).json({ error: 'Failed to fetch deployments' });
+  }
+});
 export default app;
